@@ -44,7 +44,18 @@ data class Lesson(
     val capsule: String? = null,
     val isPartani: Boolean? = null,
     val changes: List<JsonElement> = emptyList()
-)
+) {
+    override operator fun equals(other: Any?): Boolean {
+        if (other !is Lesson) {
+            return super.equals(other)
+        }
+        return day == other.day && roomID == other.roomID && studyGroupID == other.studyGroupID &&
+                subject == other.subject && subjectLevel == other.subjectLevel && room == other.room &&
+                teacherPrivateName == other.teacherPrivateName && teacherLastName == other.teacherLastName && classes == other.classes &&
+                capsule == other.capsule && isPartani == other.isPartani && changes == other.changes
+    }
+
+}
 
 @Serializable
 data class Event(
