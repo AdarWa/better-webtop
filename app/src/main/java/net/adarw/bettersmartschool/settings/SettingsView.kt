@@ -6,27 +6,18 @@ import androidx.compose.ui.platform.LocalContext
 import com.jamal.composeprefs3.ui.PrefsScreen
 import com.jamal.composeprefs3.ui.prefs.ListPref
 import com.jamal.composeprefs3.ui.prefs.SwitchPref
-import net.adarw.bettersmartschool.dataStore
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(prefs: AppPreferences) {
     val context = LocalContext.current
 
     PrefsScreen(dataStore = context.dataStore) {
-        prefsGroup("General") {
+        prefsGroup("כללי") {
             prefsItem {
                 SwitchPref(
-                    key = "notifications_enabled",
-                    title = "Enable Notifications",
-                    summary = "Receive schedule updates"
-                )
-            }
-            prefsItem {
-                ListPref(
-                    key = "theme_selection",
-                    title = "App Theme",
-                    entries = mapOf("light" to "Light", "dark" to "Dark")
+                    key = prefs.collapseSameTwoClasses.key.name,
+                    title = "קבץ שני שיעורים זהים",
                 )
             }
         }
