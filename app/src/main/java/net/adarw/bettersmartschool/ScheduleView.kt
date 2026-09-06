@@ -304,7 +304,9 @@ fun ScheduleContent(client: SmartSchoolApiClient, appPreferences: AppPreferences
     var scheduleResponse by remember { mutableStateOf<ShotefScheduleResponse?>(null) }
 
     LaunchedEffect(Unit) {
-        scheduleResponse = client.getScheduleData(ShotefScheduleRequest(340018, "12|10", 1))
+        if(appPreferences.isAuthenticated) {
+            scheduleResponse = client.getScheduleData(ShotefScheduleRequest(340018, "12|10", 1), appPreferences.webToken.value, appPreferences.uniqueId.value)
+        }
     }
 
     val resp = scheduleResponse
