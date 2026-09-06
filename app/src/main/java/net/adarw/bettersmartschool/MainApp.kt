@@ -18,14 +18,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import io.ktor.websocket.Frame
 import net.adarw.bettersmartschool.api.SmartSchoolApiClient
+import net.adarw.bettersmartschool.settings.AppPreferences
 import net.adarw.bettersmartschool.settings.SettingsScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainAppScreen(client: SmartSchoolApiClient) {
     var showSettings by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val appPreferences = remember(context) { AppPreferences(context) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -37,11 +42,15 @@ fun MainAppScreen(client: SmartSchoolApiClient) {
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+        ) {
             if (showSettings) {
-                SettingsScreen()
+                SettingsScreen(appPreferences)
             } else {
-                ScheduleContent(client = client)
+                ScheduleContent(client = client, appPreferences = appPreferences)
             }
         }
     }
