@@ -13,10 +13,7 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-class SmartSchoolApiClient(
-    private val webToken: String,
-    private val uniqueId: String
-) {
+class SmartSchoolApiClient() {
     private val client = HttpClient(Android) {
         install(ContentNegotiation) {
             json(Json {
@@ -26,7 +23,7 @@ class SmartSchoolApiClient(
         }
     }
 
-    suspend fun getScheduleData(requestData: ShotefScheduleRequest): ShotefScheduleResponse {
+    suspend fun getScheduleData(requestData: ShotefScheduleRequest, webToken: String, uniqueId: String): ShotefScheduleResponse {
         val response = client.post("https://webtopserver.smartschool.co.il/server/api/shotef/ShotefSchedualeData") {
             contentType(ContentType.Application.Json)
 
