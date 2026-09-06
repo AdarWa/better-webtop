@@ -21,9 +21,81 @@ import net.adarw.bettersmartschool.api.Lesson
 import net.adarw.bettersmartschool.api.ShotefScheduleRequest
 import net.adarw.bettersmartschool.api.ShotefScheduleResponse
 import net.adarw.bettersmartschool.api.SmartSchoolApiClient
+import net.adarw.bettersmartschool.settings.AppPreferences
+
+// Presentation model to hold either a single hour or a merged block of identical hours
+data class MergedHourBlock(
+    val startHour: Int,
+    val endHour: Int,
+    val startHourName: String?,
+    val endHourName: String?,
+    val scheduale: List<Lesson>,
+    val events: List<Event>
+) {
+    // Generates the label for the hour badge (e.g., "1" or "1 - 2")
+    val displayTime: String
+        get() = if (startHour == endHour) {
+            startHourName ?: startHour.toString()
+        } else {
+            "${endHourName ?: endHour} - ${startHourName ?: startHour}"
+        }
+
+    val isEmptyBlock: Boolean
+        get() = scheduale.isEmpty() && events.isEmpty()
+}
+
+// Groups consecutive hours that have identical lessons and events
+fun List<HourData>.mergeConsecutive(collapse: Boolean): List<MergedHourBlock> {
+    if (!collapse || this.isEmpty()) {
+        return this.map {
+            MergedHourBlock(it.hour, it.hour, it.hourName, it.hourName, it.scheduale, it.events)
+        }
+    }
+
+    val result = mutableListOf<MergedHourBlock>()
+    var currentBlock: MergedHourBlock? = null
+
+    for (hour in this) {
+        if (currentBlock == null) {
+            currentBlock = MergedHourBlock(
+                startHour = hour.hour,
+                endHour = hour.hour,
+                startHourName = hour.hourName,
+                endHourName = hour.hourName,
+                scheduale = hour.scheduale,
+                events = hour.events
+            )
+        } else {
+            // Relies on Lesson and Event being data classes for proper structural equality comparison (==)
+            val isIdentical = currentBlock.scheduale == hour.scheduale && currentBlock.events == hour.events
+
+            if (isIdentical) {
+                // Extend the current block to include this hour
+                currentBlock = currentBlock.copy(
+                    endHour = hour.hour,
+                    endHourName = hour.hourName
+                )
+            } else {
+                // Store the finished block and start a new one
+                result.add(currentBlock)
+                currentBlock = MergedHourBlock(
+                    startHour = hour.hour,
+                    endHour = hour.hour,
+                    startHourName = hour.hourName,
+                    endHourName = hour.hourName,
+                    scheduale = hour.scheduale,
+                    events = hour.events
+                )
+            }
+        }
+    }
+
+    currentBlock?.let { result.add(it) }
+    return result
+}
 
 @Composable
-fun ScheduleScreen(response: ShotefScheduleResponse) {
+fun ScheduleScreen(response: ShotefScheduleResponse, appPreferences: AppPreferences) {
     // Forces the entire screen context to Right-To-Left for proper Hebrew rendering
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Surface(
@@ -61,27 +133,35 @@ fun ScheduleScreen(response: ShotefScheduleResponse) {
                 }
 
                 val selectedDay = days[selectedTabIndex]
-                DayScheduleList(hoursData = selectedDay.hoursData)
+                DayScheduleList(
+                    hoursData = selectedDay.hoursData,
+                    collapseIdenticalLessons = appPreferences.collapseSameTwoClasses.value
+                )
             }
         }
     }
 }
 
 @Composable
-fun DayScheduleList(hoursData: List<HourData>) {
+fun DayScheduleList(hoursData: List<HourData>, collapseIdenticalLessons: Boolean) {
+    // Recalculate merged blocks only when the underlying data or the toggle flag changes
+    val mergedBlocks = remember(hoursData, collapseIdenticalLessons) {
+        hoursData.mergeConsecutive(collapse = collapseIdenticalLessons)
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(hoursData) { hourData ->
-            HourCard(hourData = hourData)
+        items(mergedBlocks) { block ->
+            HourCard(block = block)
         }
     }
 }
 
 @Composable
-fun HourCard(hourData: HourData) {
+fun HourCard(block: MergedHourBlock) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -96,13 +176,14 @@ fun HourCard(hourData: HourData) {
             // Display the hour number prominently on the side
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp) // Changed from exact size to allow text expansion
                     .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .padding(horizontal = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = hourData.hourName ?: hourData.hour.toString(),
+                    text = block.displayTime,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontWeight = FontWeight.Bold
@@ -112,7 +193,7 @@ fun HourCard(hourData: HourData) {
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                if (hourData.scheduale.isEmpty() && hourData.events.isEmpty()) {
+                if (block.isEmptyBlock) {
                     Text(
                         text = "שעה חופשית",
                         style = MaterialTheme.typography.bodyLarge,
@@ -120,12 +201,12 @@ fun HourCard(hourData: HourData) {
                         modifier = Modifier.padding(top = 12.dp)
                     )
                 } else {
-                    hourData.scheduale.forEach { lesson ->
+                    block.scheduale.forEach { lesson ->
                         LessonItem(lesson = lesson)
                         Spacer(modifier = Modifier.height(8.dp))
                     }
 
-                    hourData.events.forEach { event ->
+                    block.events.forEach { event ->
                         EventItem(event = event)
                         Spacer(modifier = Modifier.height(8.dp))
                     }
@@ -219,7 +300,7 @@ fun ErrorDisplay(message: String) {
 }
 
 @Composable
-fun ScheduleContent(client: SmartSchoolApiClient) {
+fun ScheduleContent(client: SmartSchoolApiClient, appPreferences: AppPreferences) {
     var scheduleResponse by remember { mutableStateOf<ShotefScheduleResponse?>(null) }
 
     LaunchedEffect(Unit) {
@@ -228,7 +309,7 @@ fun ScheduleContent(client: SmartSchoolApiClient) {
 
     val resp = scheduleResponse
     if (resp != null) {
-        ScheduleScreen(resp)
+        ScheduleScreen(response = resp, appPreferences)
     } else {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -242,13 +323,13 @@ fun ScheduleContent(client: SmartSchoolApiClient) {
 // Maps standard numerical day representations to Hebrew day names
 private fun getHebrewDayName(dayIndex: Int): String {
     return when (dayIndex) {
-        1 -> "ראשון"
-        2 -> "שני"
-        3 -> "שלישי"
-        4 -> "רביעי"
-        5 -> "חמישי"
-        6 -> "שישי"
-        7 -> "שבת"
+        1 -> "א"
+        2 -> "ב"
+        3 -> "ג"
+        4 -> "ד"
+        5 -> "ה"
+        6 -> "ו"
+        7 -> "ש"
         else -> "יום $dayIndex"
     }
 }
