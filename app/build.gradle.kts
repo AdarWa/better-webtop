@@ -34,6 +34,9 @@ android {
     buildFeatures {
         compose = true
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.15"
+    }
 }
 
 dependencies {
@@ -52,6 +55,8 @@ dependencies {
     implementation("com.github.JamalMulla:ComposePrefs3:1.0.5")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     implementation("androidx.compose.material:material-icons-core:1.7.0")
+    implementation("androidx.glance:glance-appwidget:1.1.1")
+    implementation("androidx.glance:glance-material3:1.1.1")
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
