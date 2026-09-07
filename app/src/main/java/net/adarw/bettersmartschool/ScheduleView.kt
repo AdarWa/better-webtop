@@ -3,12 +3,38 @@ package net.adarw.bettersmartschool
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Badge
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,12 +46,9 @@ import androidx.compose.ui.unit.dp
 import net.adarw.bettersmartschool.api.Event
 import net.adarw.bettersmartschool.api.HourData
 import net.adarw.bettersmartschool.api.Lesson
-import net.adarw.bettersmartschool.api.ShotefScheduleRequest
 import net.adarw.bettersmartschool.api.ShotefScheduleResponse
-import net.adarw.bettersmartschool.api.SmartSchoolApiClient
 import net.adarw.bettersmartschool.settings.AppPreferences
 import java.time.LocalDate
-import java.util.Date
 
 // Presentation model to hold either a single hour or a merged block of identical hours
 data class MergedHourBlock(
@@ -33,10 +56,11 @@ data class MergedHourBlock(
     val endHour: Int,
     val startHourName: String?,
     val endHourName: String?,
+    val startTime: String?,
+    val endTime: String?,
     val scheduale: List<Lesson>,
     val events: List<Event>
 ) {
-    // Generates the label for the hour badge (e.g., "1" or "1 - 2")
     val displayTime: String
         get() = if (startHour == endHour) {
             startHourName ?: startHour.toString()
@@ -44,15 +68,32 @@ data class MergedHourBlock(
             "${endHourName ?: endHour} - ${startHourName ?: startHour}"
         }
 
+    val displayClockTime: String
+        get() = if (!startTime.isNullOrBlank() && !endTime.isNullOrBlank()) {
+            "$endTime - $startTime"
+        } else {
+            ""
+        }
+
     val isEmptyBlock: Boolean
         get() = scheduale.isEmpty() && events.isEmpty()
 }
 
 // Groups consecutive hours that have identical lessons and events
-fun List<HourData>.mergeConsecutive(collapse: Boolean): List<MergedHourBlock> {
+fun List<HourData>.mergeConsecutive(collapse: Boolean, appPreferences: AppPreferences): List<MergedHourBlock> {
     if (!collapse || this.isEmpty()) {
         return this.map {
-            MergedHourBlock(it.hour, it.hour, it.hourName, it.hourName, it.scheduale, it.events)
+            val startEndTime = appPreferences.getStartEndTime(it.hour)
+            MergedHourBlock(
+                startHour = it.hour,
+                endHour = it.hour,
+                startHourName = it.hourName,
+                endHourName = it.hourName,
+                startTime = startEndTime.startTime,
+                endTime = startEndTime.endTime,
+                scheduale = it.scheduale,
+                events = it.events
+            )
         }
     }
 
@@ -61,33 +102,37 @@ fun List<HourData>.mergeConsecutive(collapse: Boolean): List<MergedHourBlock> {
 
     for (hour in this) {
         if (currentBlock == null) {
+            val startEndTime = appPreferences.getStartEndTime(hour.hour)
             currentBlock = MergedHourBlock(
                 startHour = hour.hour,
                 endHour = hour.hour,
                 startHourName = hour.hourName,
                 endHourName = hour.hourName,
+                startTime = startEndTime.startTime,
+                endTime = startEndTime.endTime,
                 scheduale = hour.scheduale,
                 events = hour.events
             )
         } else {
-            // Relies on Lesson and Event being data classes for proper structural equality comparison (==)
             val isIdentical =
                 currentBlock.scheduale == hour.scheduale && currentBlock.events == hour.events
-
+            val startEndTime = appPreferences.getStartEndTime(hour.hour)
             if (isIdentical) {
-                // Extend the current block to include this hour
+                // Extend the current block to include this hour's end time
                 currentBlock = currentBlock.copy(
                     endHour = hour.hour,
-                    endHourName = hour.hourName
+                    endHourName = hour.hourName,
+                    endTime = startEndTime.endTime
                 )
             } else {
-                // Store the finished block and start a new one
                 result.add(currentBlock)
                 currentBlock = MergedHourBlock(
                     startHour = hour.hour,
                     endHour = hour.hour,
                     startHourName = hour.hourName,
                     endHourName = hour.hourName,
+                    startTime = startEndTime.startTime,
+                    endTime = startEndTime.endTime,
                     scheduale = hour.scheduale,
                     events = hour.events
                 )
@@ -140,7 +185,8 @@ fun ScheduleScreen(response: ShotefScheduleResponse, appPreferences: AppPreferen
                 val selectedDay = days[selectedTabIndex]
                 DayScheduleList(
                     hoursData = selectedDay.hoursData,
-                    collapseIdenticalLessons = appPreferences.collapseSameTwoClasses.value
+                    collapseIdenticalLessons = appPreferences.collapseSameTwoClasses.value,
+                    appPreferences
                 )
             }
         }
@@ -148,10 +194,10 @@ fun ScheduleScreen(response: ShotefScheduleResponse, appPreferences: AppPreferen
 }
 
 @Composable
-fun DayScheduleList(hoursData: List<HourData>, collapseIdenticalLessons: Boolean) {
+fun DayScheduleList(hoursData: List<HourData>, collapseIdenticalLessons: Boolean, appPreferences: AppPreferences) {
     // Recalculate merged blocks only when the underlying data or the toggle flag changes
     val mergedBlocks = remember(hoursData, collapseIdenticalLessons) {
-        hoursData.mergeConsecutive(collapse = collapseIdenticalLessons)
+        hoursData.mergeConsecutive(collapse = collapseIdenticalLessons, appPreferences)
     }
 
     LazyColumn(
@@ -178,17 +224,17 @@ fun HourCard(block: MergedHourBlock) {
                 .padding(12.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // Display the hour number prominently on the side
-            Box(
+            Column(
                 modifier = Modifier
                     .defaultMinSize(
-                        minWidth = 48.dp,
+                        minWidth = 64.dp, // Widened slightly to fit the clock time text
                         minHeight = 48.dp
-                    ) // Changed from exact size to allow text expansion
+                    )
                     .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colorScheme.primaryContainer)
-                    .padding(horizontal = 8.dp),
-                contentAlignment = Alignment.Center
+                    .padding(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = block.displayTime,
@@ -196,6 +242,16 @@ fun HourCard(block: MergedHourBlock) {
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontWeight = FontWeight.Bold
                 )
+
+                if (block.displayClockTime.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = block.displayClockTime,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
