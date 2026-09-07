@@ -67,7 +67,8 @@ fun List<HourData>.mergeConsecutive(collapse: Boolean): List<MergedHourBlock> {
             )
         } else {
             // Relies on Lesson and Event being data classes for proper structural equality comparison (==)
-            val isIdentical = currentBlock.scheduale == hour.scheduale && currentBlock.events == hour.events
+            val isIdentical =
+                currentBlock.scheduale == hour.scheduale && currentBlock.events == hour.events
 
             if (isIdentical) {
                 // Extend the current block to include this hour
@@ -176,7 +177,10 @@ fun HourCard(block: MergedHourBlock) {
             // Display the hour number prominently on the side
             Box(
                 modifier = Modifier
-                    .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp) // Changed from exact size to allow text expansion
+                    .defaultMinSize(
+                        minWidth = 48.dp,
+                        minHeight = 48.dp
+                    ) // Changed from exact size to allow text expansion
                     .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colorScheme.primaryContainer)
                     .padding(horizontal = 8.dp),
@@ -266,7 +270,9 @@ fun EventItem(event: Event) {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
         shape = RoundedCornerShape(4.dp)
     ) {
-        Column(modifier = Modifier.padding(8.dp).fillMaxWidth()) {
+        Column(modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth()) {
             Text(
                 text = event.title ?: "אירוע",
                 style = MaterialTheme.typography.titleSmall,
@@ -287,7 +293,9 @@ fun EventItem(event: Event) {
 @Composable
 fun ErrorDisplay(message: String) {
     Box(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -304,8 +312,16 @@ fun ScheduleContent(client: SmartSchoolApiClient, appPreferences: AppPreferences
     var scheduleResponse by remember { mutableStateOf<ShotefScheduleResponse?>(null) }
 
     LaunchedEffect(Unit) {
-        if(appPreferences.isAuthenticated) {
-            scheduleResponse = client.getScheduleData(ShotefScheduleRequest(340018, "12|10", 1), appPreferences.webToken.value, appPreferences.uniqueId.value)
+        if (appPreferences.isAuthenticated) {
+            val request = ShotefScheduleRequest(
+                appPreferences.institutionCode.value.toInt(),
+                "${appPreferences.grade.value}|${appPreferences.gradeClass.value}",
+                1
+            )
+            scheduleResponse = client.getScheduleData(
+                request, appPreferences.webToken.value,
+                appPreferences.uniqueId.value
+            )
         }
     }
 
