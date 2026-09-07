@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import android.view.ViewGroup
 import android.webkit.CookieManager
+import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.runtime.Composable
@@ -28,6 +29,12 @@ fun LoginWebView(
 
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
+
+                // Clears existing session data to enforce a clean login state
+                CookieManager.getInstance().removeAllCookies(null)
+                CookieManager.getInstance().flush()
+                WebStorage.getInstance().deleteAllData()
+                clearCache(true)
 
                 webViewClient = object : WebViewClient() {
 
