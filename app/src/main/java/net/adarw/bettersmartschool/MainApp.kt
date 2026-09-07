@@ -75,7 +75,7 @@ fun MainTopAppBar(
     onRefreshClick: () -> Unit
 ) {
     TopAppBar(
-        title = { Text(if (showSettings) "Settings" else "Schedule") },
+        title = { Text(if (showSettings) "הגדרות" else "מערכת") },
         navigationIcon = {
             if (showSettings) {
                 IconButton(onClick = onBackClick) {
