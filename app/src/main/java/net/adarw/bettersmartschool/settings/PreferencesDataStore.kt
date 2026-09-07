@@ -73,6 +73,11 @@ class AppPreferences(private val context: Context) {
         ""
     )
 
+    val cacheInvalidationInterval = Preference(
+        key = stringPreferencesKey("cache_invalidation_interval"),
+        defaultValue = "5"
+    )
+
     val isAuthenticated
         get() = !webToken.value.isEmpty() && !uniqueId.value.isEmpty() && !institutionCode.value.isEmpty() && !grade.value.isEmpty() && !gradeClass.value.isEmpty()
 

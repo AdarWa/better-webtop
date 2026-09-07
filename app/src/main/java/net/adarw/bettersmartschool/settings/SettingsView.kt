@@ -84,6 +84,14 @@ fun SettingsScreen(prefs: AppPreferences) {
                         )
                     }
                 }
+                prefsGroup("רשת") {
+                    prefsItem {
+                        EditTextPref(
+                            key = prefs.cacheInvalidationInterval.key.name,
+                            title = "אינטרבל שלילת מטמון(דקות)"
+                        )
+                    }
+                }
             }
         }
 
@@ -118,14 +126,14 @@ private fun AuthenticationSection(
         ) {
             if (isAuthenticated) {
                 Text(
-                    text = "Credentials Present",
+                    text = "מחובר",
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.titleMedium
                 )
 
             } else {
                 Text(
-                    text = "Please Authenticate",
+                    text = "לא מחובר",
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.titleMedium
                 )
@@ -134,7 +142,10 @@ private fun AuthenticationSection(
                 onClick = onAuthenticateClick,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Authenticate")
+                if(!isAuthenticated)
+                    Text("התחבר")
+                else
+                    Text("התחבר מחדש")
             }
         }
     }

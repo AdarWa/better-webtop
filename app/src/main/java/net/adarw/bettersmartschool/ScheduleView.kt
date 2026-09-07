@@ -311,7 +311,7 @@ fun ErrorDisplay(message: String) {
 fun ScheduleContent(appPreferences: AppPreferences) {
     val schedule by ScheduleData.schedule.collectAsState()
     LaunchedEffect(Unit) {
-        if(System.currentTimeMillis() - appPreferences.lastUpdated.value < 1*60*1000) {
+        if(System.currentTimeMillis() - appPreferences.lastUpdated.value < appPreferences.cacheInvalidationInterval.value.toInt()*60*1000) {
             ScheduleData.loadFromCache(appPreferences)
         }else {
             ScheduleData.refresh(appPreferences)
