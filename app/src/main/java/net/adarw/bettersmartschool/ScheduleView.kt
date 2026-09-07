@@ -311,6 +311,7 @@ fun ErrorDisplay(message: String) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ScheduleContent(appPreferences: AppPreferences) {
     val schedule by ScheduleData.schedule.collectAsState()

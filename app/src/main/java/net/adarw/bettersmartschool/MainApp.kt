@@ -1,5 +1,7 @@
 package net.adarw.bettersmartschool
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -26,6 +28,7 @@ import net.adarw.bettersmartschool.api.SmartSchoolApiClient
 import net.adarw.bettersmartschool.settings.AppPreferences
 import net.adarw.bettersmartschool.settings.SettingsScreen
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainAppScreen(client: SmartSchoolApiClient) {
