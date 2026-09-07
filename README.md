@@ -6,4 +6,4 @@ This was created as the current Smart School app is very slow and generally suck
 
 # Install
 
-Install APK from [Releases Page](). This App currently supports only android(And I don't plan for this to change, currently).
+Install APK from [Releases Page](https://github.com/AdarWa/better-webtop/releases/). This App currently supports only android(And I don't plan for this to change, currently).
