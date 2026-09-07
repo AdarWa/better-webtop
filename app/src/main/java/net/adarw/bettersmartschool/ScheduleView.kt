@@ -38,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -193,6 +194,7 @@ fun ScheduleScreen(response: ShotefScheduleResponse, appPreferences: AppPreferen
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DayScheduleList(hoursData: List<HourData>, collapseIdenticalLessons: Boolean, appPreferences: AppPreferences) {
     // Recalculate merged blocks only when the underlying data or the toggle flag changes
@@ -206,17 +208,19 @@ fun DayScheduleList(hoursData: List<HourData>, collapseIdenticalLessons: Boolean
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(mergedBlocks) { block ->
-            HourCard(block = block)
+            HourCard(block = block, appPreferences)
         }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HourCard(block: MergedHourBlock) {
+fun HourCard(block: MergedHourBlock, appPreferences: AppPreferences) {
+    val isColored = appPreferences.findClosestTimeHour() in block.startHour..block.endHour
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = if(isColored) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier

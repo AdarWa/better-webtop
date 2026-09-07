@@ -1,6 +1,8 @@
 package net.adarw.bettersmartschool.settings
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -12,6 +14,9 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import kotlin.math.abs
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app_settings")
 
@@ -93,6 +98,26 @@ class AppPreferences(private val context: Context) {
     fun getStartEndTime(hour: Int): StartEndTime {
         val times = startEndTimes.value.split(";")
         return StartEndTime(times.getOrElse((hour-1)*2,{"00:00"}), times.getOrElse((hour-1)*2+1, {"00:00"}))
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun findClosestTimeHour(currentTime: LocalTime = LocalTime.now()): Int {
+        val timeList = startEndTimes.value.split(";")
+        val formatter = DateTimeFormatter.ofPattern("H:mm")
+        var closestIndex = 0
+        var minDifference = Long.MAX_VALUE
+
+        for ((index, timeStr) in timeList.withIndex()) {
+            val parsedTime = LocalTime.parse(timeStr, formatter)
+            val difference = abs(java.time.Duration.between(currentTime, parsedTime).toMinutes())
+
+            if (difference < minDifference) {
+                minDifference = difference
+                closestIndex = index
+            }
+        }
+
+        return closestIndex / 2
     }
 
     val isAuthenticated
