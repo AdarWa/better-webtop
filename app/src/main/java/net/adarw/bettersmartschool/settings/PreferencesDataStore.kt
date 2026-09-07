@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
@@ -46,8 +47,23 @@ class AppPreferences(private val context: Context) {
         defaultValue = ""
     )
 
+    val institutionCode = Preference(
+        key = stringPreferencesKey("institution_code"),
+        defaultValue = ""
+    )
+
+    val grade = Preference(
+        key = stringPreferencesKey("grade"),
+        defaultValue = ""
+    )
+
+    val gradeClass = Preference(
+        key = stringPreferencesKey("gradeClass"),
+        defaultValue = ""
+    )
+
     val isAuthenticated
-        get() = !webToken.value.isEmpty() && !uniqueId.value.isEmpty()
+        get() = !webToken.value.isEmpty() && !uniqueId.value.isEmpty() && !institutionCode.value.isEmpty() && !grade.value.isEmpty() && !gradeClass.value.isEmpty()
 
     val collapseSameTwoClasses = Preference(
         key = booleanPreferencesKey("collapse_same_two_classes"),
