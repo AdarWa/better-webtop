@@ -13,7 +13,7 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-class SmartSchoolApiClient() {
+class SmartSchoolApiClient {
     private val client = HttpClient(Android) {
         install(ContentNegotiation) {
             json(Json {
