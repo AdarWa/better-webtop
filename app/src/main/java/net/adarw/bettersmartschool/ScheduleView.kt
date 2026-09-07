@@ -1,5 +1,7 @@
 package net.adarw.bettersmartschool
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,6 +24,8 @@ import net.adarw.bettersmartschool.api.ShotefScheduleRequest
 import net.adarw.bettersmartschool.api.ShotefScheduleResponse
 import net.adarw.bettersmartschool.api.SmartSchoolApiClient
 import net.adarw.bettersmartschool.settings.AppPreferences
+import java.time.LocalDate
+import java.util.Date
 
 // Presentation model to hold either a single hour or a merged block of identical hours
 data class MergedHourBlock(
@@ -95,6 +99,7 @@ fun List<HourData>.mergeConsecutive(collapse: Boolean): List<MergedHourBlock> {
     return result
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ScheduleScreen(response: ShotefScheduleResponse, appPreferences: AppPreferences) {
     // Forces the entire screen context to Right-To-Left for proper Hebrew rendering
@@ -111,12 +116,11 @@ fun ScheduleScreen(response: ShotefScheduleResponse, appPreferences: AppPreferen
             }
 
             val days = response.data
-            var selectedTabIndex by remember { mutableIntStateOf(0) }
+            var selectedTabIndex by remember { mutableIntStateOf(LocalDate.now().dayOfWeek.value % 6) }
 
             Column(modifier = Modifier.fillMaxSize()) {
-                ScrollableTabRow(
+                TabRow(
                     selectedTabIndex = selectedTabIndex,
-                    edgePadding = 8.dp,
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     days.forEachIndexed { index, daySchedule ->
@@ -329,7 +333,6 @@ fun ScheduleContent(appPreferences: AppPreferences) {
     }
 }
 
-// Maps standard numerical day representations to Hebrew day names
 private fun getHebrewDayName(dayIndex: Int): String {
     return when (dayIndex) {
         1 -> "א"
