@@ -33,6 +33,7 @@ import androidx.glance.text.TextStyle
 import net.adarw.bettersmartschool.MainActivity
 import net.adarw.bettersmartschool.MergedHourBlock
 import net.adarw.bettersmartschool.ScheduleData
+import net.adarw.bettersmartschool.getDayIndex
 import net.adarw.bettersmartschool.mergeConsecutive
 import net.adarw.bettersmartschool.settings.AppPreferences
 import java.time.LocalDate
@@ -71,7 +72,7 @@ fun WidgetContent() {
             return@LaunchedEffect
         }
 
-        val currentDayIndex = LocalDate.now().dayOfWeek.value % 6
+        val currentDayIndex = getDayIndex()
         val todaySchedule = scheduleResponse.data.getOrNull(currentDayIndex)
 
         if (todaySchedule != null) {

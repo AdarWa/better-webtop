@@ -48,7 +48,12 @@ import net.adarw.bettersmartschool.api.HourData
 import net.adarw.bettersmartschool.api.Lesson
 import net.adarw.bettersmartschool.api.ShotefScheduleResponse
 import net.adarw.bettersmartschool.settings.AppPreferences
+import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalTime
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun getDayIndex(): Int = (LocalDate.now().dayOfWeek.value + if(LocalTime.now().hour >= 19 && LocalDate.now().dayOfWeek != DayOfWeek.SATURDAY) 1 else 0) % 6
 
 // Presentation model to hold either a single hour or a merged block of identical hours
 data class MergedHourBlock(
@@ -161,7 +166,7 @@ fun ScheduleScreen(response: ShotefScheduleResponse, appPreferences: AppPreferen
             }
 
             val days = response.data
-            var selectedTabIndex by remember { mutableIntStateOf(LocalDate.now().dayOfWeek.value % 6) }
+            var selectedTabIndex by remember { mutableIntStateOf(getDayIndex()) }
 
             Column(modifier = Modifier.fillMaxSize()) {
                 TabRow(
