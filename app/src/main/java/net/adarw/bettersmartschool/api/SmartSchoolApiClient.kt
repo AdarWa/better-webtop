@@ -1,5 +1,6 @@
 package net.adarw.bettersmartschool.api
 
+import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.android.Android
@@ -24,6 +25,7 @@ class SmartSchoolApiClient {
     }
 
     suspend fun getScheduleData(requestData: ShotefScheduleRequest, webToken: String, uniqueId: String): ShotefScheduleResponse {
+        Log.e("NetworkClient", "Fetched from network!")
         val response = client.post("https://webtopserver.smartschool.co.il/server/api/shotef/ShotefSchedualeData") {
             contentType(ContentType.Application.Json)
 

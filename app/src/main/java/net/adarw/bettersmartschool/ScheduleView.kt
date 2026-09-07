@@ -310,6 +310,13 @@ fun ErrorDisplay(message: String) {
 @Composable
 fun ScheduleContent(appPreferences: AppPreferences) {
     val schedule by ScheduleData.schedule.collectAsState()
+    LaunchedEffect(Unit) {
+        if(System.currentTimeMillis() - appPreferences.lastUpdated.value < 1*60*1000) {
+            ScheduleData.loadFromCache(appPreferences)
+        }else {
+            ScheduleData.refresh(appPreferences)
+        }
+    }
     if (schedule != null) {
         ScheduleScreen(response = schedule!!, appPreferences)
     } else {

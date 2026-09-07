@@ -68,6 +68,11 @@ class AppPreferences(private val context: Context) {
         defaultValue = 0
     )
 
+    val cachedSchedule = Preference(
+        key = stringPreferencesKey("cached_schedule"),
+        ""
+    )
+
     val isAuthenticated
         get() = !webToken.value.isEmpty() && !uniqueId.value.isEmpty() && !institutionCode.value.isEmpty() && !grade.value.isEmpty() && !gradeClass.value.isEmpty()
 
