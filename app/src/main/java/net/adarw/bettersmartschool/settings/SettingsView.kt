@@ -82,6 +82,13 @@ fun SettingsScreen(prefs: AppPreferences) {
                             title = "קבץ שני שיעורים זהים",
                         )
                     }
+                    prefsItem {
+                        SwitchPref(
+                            key = prefs.darkTheme.key.name,
+                            title = "מצב כהה",
+                            defaultChecked = false
+                        )
+                    }
                 }
                 prefsGroup("שעות") {
                     prefsItem {

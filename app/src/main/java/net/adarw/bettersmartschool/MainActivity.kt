@@ -1,10 +1,13 @@
 package net.adarw.bettersmartschool
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -24,16 +27,18 @@ import kotlinx.coroutines.runBlocking
 import net.adarw.bettersmartschool.api.ShotefScheduleRequest
 import net.adarw.bettersmartschool.api.ShotefScheduleResponse
 import net.adarw.bettersmartschool.api.SmartSchoolApiClient
+import net.adarw.bettersmartschool.settings.AppPreferences
 import net.adarw.bettersmartschool.ui.theme.BetterSmartSchoolTheme
 val client = SmartSchoolApiClient()
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         setContent {
-            BetterSmartSchoolTheme {
+            BetterSmartSchoolTheme(isSystemInDarkTheme() || AppPreferences(this).darkTheme.value) {
                 MainAppScreen(client = client)
             }
         }

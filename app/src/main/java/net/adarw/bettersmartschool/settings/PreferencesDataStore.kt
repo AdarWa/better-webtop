@@ -85,6 +85,11 @@ class AppPreferences(private val context: Context) {
         defaultValue = "8:10;8:50;8:50;9:30;9:45;10:25;10:25;11:05;11:20;12:00;12:00;12:40;13:10;13:50;13:50;14:30;14:40;15:20;15:20;16:00;16:10;16:50;16:50;17:30;17:40;18:20;18:20;19:00"
     )
 
+    val darkTheme = Preference(
+        key = booleanPreferencesKey("dark_theme"),
+        defaultValue = false
+    )
+
     fun getStartEndTime(hour: Int): StartEndTime {
         val times = startEndTimes.value.split(";")
         return StartEndTime(times.getOrElse((hour-1)*2,{"00:00"}), times.getOrElse((hour-1)*2+1, {"00:00"}))
