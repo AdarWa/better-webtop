@@ -82,7 +82,7 @@ class AppPreferences(private val context: Context) {
 
     val cacheInvalidationInterval = Preference(
         key = stringPreferencesKey("cache_invalidation_interval"),
-        defaultValue = "5"
+        defaultValue = "30"
     )
 
     val startEndTimes = Preference(

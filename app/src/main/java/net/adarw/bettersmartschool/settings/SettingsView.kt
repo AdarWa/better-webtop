@@ -103,7 +103,8 @@ fun SettingsScreen(prefs: AppPreferences) {
                     prefsItem {
                         EditTextPref(
                             key = prefs.cacheInvalidationInterval.key.name,
-                            title = "אינטרבל שלילת מטמון(דקות)"
+                            title = "אינטרבל שלילת מטמון(דקות)",
+                            defaultValue = "30"
                         )
                     }
                 }
