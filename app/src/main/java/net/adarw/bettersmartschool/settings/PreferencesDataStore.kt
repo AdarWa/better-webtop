@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
@@ -60,6 +61,11 @@ class AppPreferences(private val context: Context) {
     val gradeClass = Preference(
         key = stringPreferencesKey("gradeClass"),
         defaultValue = ""
+    )
+
+    val lastUpdated = Preference(
+        key = longPreferencesKey("last_updated"),
+        defaultValue = 0
     )
 
     val isAuthenticated

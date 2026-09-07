@@ -308,26 +308,10 @@ fun ErrorDisplay(message: String) {
 }
 
 @Composable
-fun ScheduleContent(client: SmartSchoolApiClient, appPreferences: AppPreferences) {
-    var scheduleResponse by remember { mutableStateOf<ShotefScheduleResponse?>(null) }
-
-    LaunchedEffect(Unit) {
-        if (appPreferences.isAuthenticated) {
-            val request = ShotefScheduleRequest(
-                appPreferences.institutionCode.value.toInt(),
-                "${appPreferences.grade.value}|${appPreferences.gradeClass.value}",
-                1
-            )
-            scheduleResponse = client.getScheduleData(
-                request, appPreferences.webToken.value,
-                appPreferences.uniqueId.value
-            )
-        }
-    }
-
-    val resp = scheduleResponse
-    if (resp != null) {
-        ScheduleScreen(response = resp, appPreferences)
+fun ScheduleContent(appPreferences: AppPreferences) {
+    val schedule by ScheduleData.schedule.collectAsState()
+    if (schedule != null) {
+        ScheduleScreen(response = schedule!!, appPreferences)
     } else {
         Box(
             modifier = Modifier.fillMaxSize(),
