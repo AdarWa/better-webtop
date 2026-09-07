@@ -20,7 +20,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.jamal.composeprefs3.ui.PrefsScreen
@@ -81,6 +80,15 @@ fun SettingsScreen(prefs: AppPreferences) {
                         SwitchPref(
                             key = prefs.collapseSameTwoClasses.key.name,
                             title = "קבץ שני שיעורים זהים",
+                        )
+                    }
+                }
+                prefsGroup("שעות") {
+                    prefsItem {
+                        EditTextPref(
+                            key = prefs.startEndTimes.key.name,
+                            title = "התאמת שעות למערכת",
+                            defaultValue = prefs.startEndTimes.defaultValue
                         )
                     }
                 }

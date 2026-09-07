@@ -15,6 +15,8 @@ import kotlinx.coroutines.runBlocking
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app_settings")
 
+data class StartEndTime(val startTime: String, val endTime: String)
+
 class AppPreferences(private val context: Context) {
 
     inner class Preference<T>(
@@ -77,6 +79,16 @@ class AppPreferences(private val context: Context) {
         key = stringPreferencesKey("cache_invalidation_interval"),
         defaultValue = "5"
     )
+
+    val startEndTimes = Preference(
+        key = stringPreferencesKey("start_end_times"),
+        defaultValue = "8:10;8:50;8:50;9:30;9:45;10:25;10:25;11:05;11:20;12:00;12:00;12:40;13:10;13:50;13:50;14:30;14:40;15:20;15:20;16:00;16:10;16:50;16:50;17:30;17:40;18:20;18:20;19:00"
+    )
+
+    fun getStartEndTime(hour: Int): StartEndTime {
+        val times = startEndTimes.value.split(";")
+        return StartEndTime(times.getOrElse((hour-1)*2,{"00:00"}), times.getOrElse((hour-1)*2+1, {"00:00"}))
+    }
 
     val isAuthenticated
         get() = !webToken.value.isEmpty() && !uniqueId.value.isEmpty() && !institutionCode.value.isEmpty() && !grade.value.isEmpty() && !gradeClass.value.isEmpty()
