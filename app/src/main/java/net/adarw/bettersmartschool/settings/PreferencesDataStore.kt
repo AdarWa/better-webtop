@@ -101,23 +101,32 @@ class AppPreferences(private val context: Context) {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun findClosestTimeHour(currentTime: LocalTime = LocalTime.now()): Int {
-        val timeList = startEndTimes.value.split(";")
+    fun findClosestTimeHour(currentTime: LocalTime = LocalTime.parse("11:20",DateTimeFormatter.ofPattern("H:mm"))): Int {
+        val timeBlocks = startEndTimes.value.split(";")
         val formatter = DateTimeFormatter.ofPattern("H:mm")
-        var closestIndex = 0
-        var minDifference = Long.MAX_VALUE
 
-        for ((index, timeStr) in timeList.withIndex()) {
-            val parsedTime = LocalTime.parse(timeStr, formatter)
-            val difference = abs(java.time.Duration.between(currentTime, parsedTime).toMinutes())
+        val currentMinutes = currentTime.hour * 60 + currentTime.minute
 
-            if (difference < minDifference) {
-                minDifference = difference
-                closestIndex = index
+        for (i in timeBlocks.indices step 2) {
+            val start = LocalTime.parse(timeBlocks[i], formatter)
+            val end = LocalTime.parse(timeBlocks[i + 1], formatter)
+
+            val startMinutes = start.hour * 60 + start.minute
+            val endMinutes = end.hour * 60 + end.minute
+
+            val blockIndex = (i / 2) + 1
+
+            if (currentMinutes in startMinutes..endMinutes) {
+                return blockIndex
+            }
+
+            if (currentMinutes < startMinutes) {
+                return blockIndex
             }
         }
 
-        return closestIndex / 2
+        // Return the last block index if the current time is after all time blocks
+        return if (timeBlocks.isNotEmpty()) timeBlocks.size / 2 else -1
     }
 
     val isAuthenticated
