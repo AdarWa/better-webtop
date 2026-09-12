@@ -101,7 +101,7 @@ class AppPreferences(private val context: Context) {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun findClosestTimeHour(currentTime: LocalTime = LocalTime.parse("11:20",DateTimeFormatter.ofPattern("H:mm"))): Int {
+    fun findClosestTimeHour(currentTime: LocalTime = LocalTime.now()): Int {
         val timeBlocks = startEndTimes.value.split(";")
         val formatter = DateTimeFormatter.ofPattern("H:mm")
 
