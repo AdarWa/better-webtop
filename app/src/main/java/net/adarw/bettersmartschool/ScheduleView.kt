@@ -166,7 +166,7 @@ fun ScheduleScreen(response: ShotefScheduleResponse, appPreferences: AppPreferen
             }
 
             val days = response.data
-            var selectedTabIndex by remember { mutableIntStateOf(getDayIndex()) }
+            var selectedTabIndex by remember { mutableIntStateOf(getDayIndex()-1) }
 
             Column(modifier = Modifier.fillMaxSize()) {
                 TabRow(
